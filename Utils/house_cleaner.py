@@ -1,7 +1,7 @@
 ###################
 # Author: Tony Kelly
 # Date: February 2019
-# Purpose: Script to clean data for 605.649 Intro to ML Course
+# Purpose: Script to clean data
 # Description: This script looks through a csv file and replaces
 # ? with the value in the last column (classification column).
 ##################

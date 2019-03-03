@@ -1,7 +1,7 @@
 ###################
 # Author: Tony Kelly
 # Date: February 2019
-# Purpose: Script to clean data for 605.649 Intro to ML Course
+# Purpose: Script to clean data
 # Description: This script changes Iris-sentosa to 0, all else to 1, and then takes average
 # -> of each column. It then compares the values contains within the columns and if they are above
 # -> or equal to the average, marks it as 1, if not, marks it as 0.

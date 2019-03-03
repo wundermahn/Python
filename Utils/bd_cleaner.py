@@ -1,7 +1,7 @@
 ###################
 # Author: Tony Kelly
 # Date: February 2019
-# Purpose: Script to clean data for 605.649 Intro to ML Course
+# Purpose: Script to clean data
 # Description: This script looks through a csv file and changes values to binary 0 or 1.
 # -> The script takes the average value of the respective value's column, and if the value is greater than the average,
 # -> marks it as a 1, if not, marks it as a 0.

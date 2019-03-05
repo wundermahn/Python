@@ -57,13 +57,13 @@ def get_classification(classes):
 
     # Loop through the given array in a for each loop
     for aclass in classes:
-        if aclass[0] in counts:
-            print(aclass[0])
-            counts[aclass[0]] += 1
+        if aclass[:,0] in counts:
+            print(aclass[:,0])
+            counts[aclass[:,0]] += 1
         else:
-            counts[aclass[0]] = 1
+            counts[aclass[:,0]] = 1
 
-    print(counts[aclass[0]])
+    print(counts[aclass[:,0]])
     classification = sorted(counts, key=counts.get, reverse=True)
     print(classification[0])
     return classification[0]
@@ -108,13 +108,17 @@ def knn_predict(test_data, train_data, k_value):
         else:
             i.append('NaN')
 
+#def split_by_class
+# Create a function to essentially split into regular and just classes
+
 def main():
     ecoli_csv_data = csv_to_array('Classification/ecoli.csv')
     ecoli_training_set, ecoli_testing_set = split_data(ecoli_csv_data)
 
-    # print(ecoli_training_set)
-    ecoli_classes = ecoli_training_set[:,-1]
-    # print(ecoli_classes)
-    get_classification(ecoli_classes)
+    cols = ecoli_training_set.shape[1]
+    ecoli_classes = ecoli_training_set[:,cols-1]
+    print(ecoli_classes)
+    print(len(ecoli_classes))
+    print(len(ecoli_training_set))
 
 main()

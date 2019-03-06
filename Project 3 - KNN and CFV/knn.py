@@ -6,6 +6,10 @@ import statistics
 import math
 # //TODO: ADD COMMENT
 import operator
+# //TODO: ADD COMMENT
+from collections import Counter
+# //TODO: ADD COMMENT
+from numpy import genfromtxt
 
 #################### DATA HANDLING LIBRARY ####################
 def csv_to_array(file):
@@ -18,10 +22,16 @@ def csv_to_array(file):
         # Utilize a try catch to try and convert to float, if it can't convert to float, converts to 0
         try:
             data[index] = [float(x) for x in data[index]]
+        except Exception:
+            data[index] = 0
         except ValueError:
             data[index] = 0
 
     # Return the now type-formatted data
+    return data
+
+def machine_csv_to_array(file):
+    data = genfromtxt(file, delimiter=',')
     return data
 
 # Function that utilizes the numpy library to randomize the dataset.
@@ -39,11 +49,22 @@ def split_data(csv):
     split_mark = int(num_rows / 3)
 
     # Split the data
-    training_set = csv[:split_mark]
+    train_set = csv[:split_mark]
     test_set = csv[split_mark:]
 
-    # Return the two data sets
-    return training_set, test_set
+    # Split the data into classes vs actual data
+    training_cols = train_set.shape[1]
+    testing_cols = test_set.shape[1]
+    training_classes = train_set[:,training_cols-1]
+    testing_classes = test_set[:,testing_cols-1]
+
+    # Take the training and testing sets and remove the last (classification) column
+    training_set = train_set[:-1]
+    testing_set = test_set[:-1]
+
+    # Return the datasets
+    return testing_set, testing_classes, training_set, training_classes
+
 #################### DATA HANDLING LIBRARY ####################
 
 def euclidean_distance(a, b):
@@ -52,21 +73,18 @@ def euclidean_distance(a, b):
 # This function returns the most element from an array
 # This will be used to return the classification for the k-nearest-neighbor
 def get_classification(classes):
-    # Create a list of counts for each class
-    counts = {}
+    count = Counter(classes)
+    return count.most_common()[0][0]
 
-    # Loop through the given array in a for each loop
-    for aclass in classes:
-        if aclass[:,0] in counts:
-            print(aclass[:,0])
-            counts[aclass[:,0]] += 1
-        else:
-            counts[aclass[:,0]] = 1
+def get_average_value(values):
+    values = numpy.asarray(values)
+    average = numpy.average(values)
+    return average
 
-    print(counts[aclass[:,0]])
-    classification = sorted(counts, key=counts.get, reverse=True)
-    print(classification[0])
-    return classification[0]
+def squared_error(guess, test_point):
+    error = guess - test_point
+    error = error * error
+    return error
 
 def get_nearest_neighbors(training_data, evaluation_point, k):
     distances = []
@@ -74,7 +92,7 @@ def get_nearest_neighbors(training_data, evaluation_point, k):
 
     for neighbor in training_data:
         currDistance = euclidean_distance(neighbor, evaluation_point)
-        distances.append(index, currDistance)
+        distances.append((index, currDistance))
         index = index + 1
 
     distances.sort(key=operator.itemgetter(1))
@@ -85,40 +103,74 @@ def get_nearest_neighbors(training_data, evaluation_point, k):
 
     return nearest_neighbors
 
-def knn_predict(test_data, train_data, k_value):
-    for i in test_data:
-        eu_Distance =[]
-        knn = []
-        good = 0
-        bad = 0
-        for j in train_data:
-            eu_dist = euclidean_distance(i, j)
-            eu_Distance.append((j[5], eu_dist))
-            eu_Distance.sort(key = operator.itemgetter(1))
-            knn = eu_Distance[:k_value]
-            for k in knn:
-                if k[0] =='g':
-                    good += 1
-                else:
-                    bad +=1
-        if good > bad:
-            i.append('g')
-        elif good < bad:
-            i.append('b')
-        else:
-            i.append('NaN')
+def known_nearest_neighbors_classification(testing_data, testing_classes, training_data, training_classes, k):
+    num_correct = 0
+    num_wrong = 0
+    total = 0
+    for test_class, test_point in zip(testing_classes, testing_data):
+        neighbor_indeces = get_nearest_neighbors(training_data, test_point, k)
+        nearest_neighbors = []
 
-#def split_by_class
-# Create a function to essentially split into regular and just classes
+        for index in neighbor_indeces:
+            nearest_neighbors.append(training_classes[index])
+
+        classification = get_classification(nearest_neighbors)
+
+        if numpy.array_equal(classification, test_class):
+            num_correct = num_correct + 1
+        else:
+            num_wrong = num_wrong + 1
+
+    total = float(((num_correct) / (num_correct + num_wrong)) * 100)
+    return total
+
+def known_nearest_neighbors_regression(testing_data, testing_classes, training_data, training_classes, k):
+    errors = []
+
+    for test_class, test_point in zip(testing_classes, testing_data):
+        neighbor_indeces = get_nearest_neighbors(training_data, test_point, k)
+        nearest_neighbors = []
+
+        for index in neighbor_indeces:
+            nearest_neighbors.append(training_classes[index])
+
+        average = get_average_value(nearest_neighbors)
+        error = squared_error(average, test_point)
+        errors.append(error)
+
+    return (get_average_value(errors))
 
 def main():
     ecoli_csv_data = csv_to_array('Classification/ecoli.csv')
-    ecoli_training_set, ecoli_testing_set = split_data(ecoli_csv_data)
+    ecoli_testing_data, ecoli_testing_classes, ecoli_training_data, ecoli_training_classes = split_data(ecoli_csv_data)
 
-    cols = ecoli_training_set.shape[1]
-    ecoli_classes = ecoli_training_set[:,cols-1]
-    print(ecoli_classes)
-    print(len(ecoli_classes))
-    print(len(ecoli_training_set))
+    seg_csv_data = csv_to_array('Classification/segmentation.csv')
+    seg_testing_data, seg_testing_classes, seg_training_data, seg_training_classes = split_data(seg_csv_data)
+
+
+    print("NOW TESTING SEGMENTATION")
+    seg_accuracy = known_nearest_neighbors_classification(seg_testing_data, seg_testing_classes, seg_training_data, seg_training_classes, 3)
+    print("                      ")
+    print("NOW TESTING ECOLI")
+    ecoli_accuracy = known_nearest_neighbors_classification(ecoli_testing_data, ecoli_testing_classes, ecoli_training_data, ecoli_training_classes, 3)
+
+    print("Segmentation Accuracy: ", seg_accuracy)
+    print("Ecoli Accuracy: ", ecoli_accuracy)
+
+    print("#########################################################")
+    print("#########################################################")
+    print("#########################################################")
+
+    fire_csv_data = csv_to_array('Regression/forestfires.csv')
+    fire_testing_data, fire_testing_classes, fire_training_data, fire_training_classes = split_data(fire_csv_data)
+
+    machines_csv_data = csv_to_array('Regression/machine.csv')
+    machine_testing_data, machine_testing_classes, machine_training_data, machine_training_classes = split_data(machines_csv_data)
+
+    fires_error = known_nearest_neighbors_regression(fire_testing_data, fire_testing_classes, fire_training_data, fire_training_classes, 3)
+    machines_error = known_nearest_neighbors_regression(machine_testing_data, machine_testing_classes, machine_training_data, machine_training_classes, 3)
+
+    print("Fires Error: ", fires_error)
+    print("Machines Error: ", machines_error)
 
 main()

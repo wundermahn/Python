@@ -1,0 +1,25 @@
+E Coli
+- Deleted omL (5 examples) (per project instructions)
+- Deleted imL (2 examples) (per project instructions)
+- Deleted imS (2 examples) (per project instructions)
+- Changed classifications
+	- cp => 0
+	- im => 1
+	- 1U => 2
+	- om => 3
+	- pp => 4 
+- Deleted 1st column
+- Formatted it to be opened as a CSV
+
+
+Segmenation
+- Deleted Rows 1-4 (Text)
+- Changed Column A from:
+	- Brickface => 0
+	- Cement => 1
+	- Foliage => 2
+	- Grass => 3
+	- Path => 4
+	- Sky => 5
+	- Window => 6
+- Moved Column A to last column
